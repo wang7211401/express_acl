@@ -2,6 +2,7 @@ module.exports = (app, acl) => {
   const express = require("express")
   const jwt = require("jsonwebtoken")
   const assert = require("http-assert")
+  var ok = require('assert')
   const AdminUser = require("../../models/AdminUser")
   const router = express.Router({
     mergeParams: true,
@@ -77,6 +78,7 @@ module.exports = (app, acl) => {
 
   app.post("/admin/api/login", async (req, res) => {
     const { username, password } = req.body
+    console.log(username,password)
     if (!username || !password) {
       return res.send({ code: 0, msg: "用户名或密码不能为空！" })
     }
@@ -84,7 +86,18 @@ module.exports = (app, acl) => {
     const user = await AdminUser.findOne({
       username,
     }).select("+password")
-    assert(user, 422, "用户不存在")
+
+    if(!user){
+      return res.status(422).send({ code: 0, msg: "用户不存在" })
+    }
+    // assert(user, 422, '用户不存在')
+    // try {
+      
+    // } catch (err) {
+    //   ok(err.status === 422)
+    //   ok(err.message === '用户不存在')
+    //   ok(err.expose)
+    // }
 
     // 校验密码
     // const isValid = require('md5')(password) != user.password
@@ -106,13 +119,13 @@ module.exports = (app, acl) => {
   })
 
   app.post("/admin/api/register", async (req, res) => {
-    const { username, password, repassword } = req.body
+    const { username, password, checkPassword } = req.body
     console.log(username)
-    if (!username || !password || !repassword) {
-      return res.send({ code: 0, msg: "用户名或密码不能为空！" })
+    if (!username || !password || !checkPassword) {
+      return res.status(422).send({ code: 0, msg: "用户名或密码不能为空！" })
     }
-    if (password !== repassword) {
-      return res.send({ code: 0, msg: "两次输入的密码不相同！" })
+    if (password !== checkPassword) {
+      return res.status(422).send({ code: 0, msg: "两次输入的密码不相同！" })
     }
 
     // 根据用户名找用户
@@ -121,7 +134,7 @@ module.exports = (app, acl) => {
     })
 
     if (user) {
-      return res.send({ code: 0, msg: "用户名已存在" })
+      return res.status(422).send({ code: 0, msg: "用户名已存在" })
     }
 
     const newUser = await AdminUser.create({
@@ -129,7 +142,7 @@ module.exports = (app, acl) => {
       password,
     })
 
-    acl.addUserRoles(newUser._id, ["normal"])
+    acl.addUserRoles(String(newUser._id), ["member"])
 
     // 数据token
     const token = jwt.sign(
@@ -142,18 +155,9 @@ module.exports = (app, acl) => {
     res.send({ code: 1, token, msg: "注册成功" })
   })
 
-  app.get("/admin/api/user", authMiddleware(), async (req, res) => {
+  app.get("/admin/api/user", authMiddleware(), privilegeMiddleware(acl), async (req, res) => {
     res.send({ code: 1, user: req.user })
   })
-
-  app.get(
-    "/admin/reserve",
-    authMiddleware(),
-    privilegeMiddleware(acl),
-    (req, res) => {
-      res.send({ code: 1, user: req.user })
-    }
-  )
 
   app.get(
     "/admin/sign",
