@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
 
 const schema = new mongoose.Schema({
+  voteId: { type: Schema.Types.ObjectId, ref: "Vote" },
   auth_open: { type: Number },
   bg_audio: { type: Number },
   bg_img: { type: Number },

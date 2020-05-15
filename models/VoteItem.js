@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
 
 const schema = new mongoose.Schema({
+  voteId: { type: Schema.Types.ObjectId, ref: "Vote" },
   cover_bom: {
     type: String,
   },
