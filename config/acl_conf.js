@@ -1,16 +1,20 @@
 module.exports = [
   {
     roles: "normal", // 一般用户
-    allows: [{ resources: ["/admin/api/user"], permissions: ["get"] }],
+    allows: [
+      { resources: ["/admin/api/user"], permissions: ["get"] },
+      {
+        resources: ["/admin/api/creat"],
+        permissions: ["post"],
+      },
+    ],
   },
   {
     roles: "member", // 会员
     allows: [
-      { resources: ["/admin/api/user","/admin/sign"], permissions: ["get"] },
+      { resources: ["/admin/api/user", "/admin/sign"], permissions: ["get"] },
       {
-        resources: [
-          "/admin/api/creat"
-        ],
+        resources: ["/admin/api/creat"],
         permissions: ["post"],
       },
     ],
@@ -18,11 +22,9 @@ module.exports = [
   {
     roles: "company", // 高级会员
     allows: [
-      { resources: ["/admin/api/user","/admin/sign"], permissions: ["get"] },
+      { resources: ["/admin/api/user", "/admin/sign"], permissions: ["get"] },
       {
-        resources: [
-          "/admin/api/creat"
-        ],
+        resources: ["/admin/api/creat"],
         permissions: ["post"],
       },
     ],
@@ -31,13 +33,11 @@ module.exports = [
     roles: "admin", // 管理
     allows: [
       {
-        resources: ["/admin/api/user","/admin/sign"],
+        resources: ["/admin/api/user", "/admin/sign"],
         permissions: ["get"],
       },
       {
-        resources: [
-          "/admin/api/creat"
-        ],
+        resources: ["/admin/api/creat"],
         permissions: ["post"],
       },
     ],
@@ -46,13 +46,11 @@ module.exports = [
     roles: "root", // 最高权限
     allows: [
       {
-        resources: ["/admin/api/user","/admin/sign"],
+        resources: ["/admin/api/user", "/admin/sign"],
         permissions: ["get"],
       },
       {
-        resources: [
-          "/admin/api/creat"
-        ],
+        resources: ["/admin/api/creat"],
         permissions: ["post"],
       },
     ],

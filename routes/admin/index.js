@@ -2,8 +2,11 @@ module.exports = (app, acl) => {
   const express = require("express")
   const jwt = require("jsonwebtoken")
   const assert = require("http-assert")
-  var ok = require('assert')
+  var ok = require("assert")
   const AdminUser = require("../../models/AdminUser")
+  const AdminVote = require("../../models/Vote")
+  const AdminVoteItem = require("../../models/VoteItem")
+  const AdminVoteRule = require("../../models/VoteRule")
   const router = express.Router({
     mergeParams: true,
   })
@@ -78,7 +81,7 @@ module.exports = (app, acl) => {
 
   app.post("/admin/api/login", async (req, res) => {
     const { username, password } = req.body
-    console.log(username,password)
+    console.log(username, password)
     if (!username || !password) {
       return res.send({ code: 0, msg: "用户名或密码不能为空！" })
     }
@@ -87,12 +90,12 @@ module.exports = (app, acl) => {
       username,
     }).select("+password")
 
-    if(!user){
+    if (!user) {
       return res.status(422).send({ code: 0, msg: "用户不存在" })
     }
     // assert(user, 422, '用户不存在')
     // try {
-      
+
     // } catch (err) {
     //   ok(err.status === 422)
     //   ok(err.message === '用户不存在')
@@ -155,9 +158,38 @@ module.exports = (app, acl) => {
     res.send({ code: 1, token, msg: "注册成功" })
   })
 
-  app.get("/admin/api/user", authMiddleware(), privilegeMiddleware(acl), async (req, res) => {
-    res.send({ code: 1, user: req.user })
-  })
+  router.post(
+    "/admin/api/create",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      const { title, start_time, end_time, content } = req.body
+      if (!title || !start_time || !end_time) {
+        return res.status(422).send({ code: 0, msg: "内容不能为空！" })
+      }
+
+      const newVote = await AdminVote.create({
+        title,
+        start_time,
+        end_time,
+        content,
+      })
+
+      const newVoteRule = await AdminVoteRule.create({
+        voteId: newVote._id,
+      })
+
+      res.send({ code: 1, msg: "创建成功" })
+    }
+  )
+  app.get(
+    "/admin/api/user",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      res.send({ code: 1, user: req.user })
+    }
+  )
 
   app.get(
     "/admin/sign",

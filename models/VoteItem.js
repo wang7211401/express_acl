@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
-
-const schema = new mongoose.Schema({
+const Schema = mongoose.Schema
+const voteItem = new Schema({
   voteId: { type: Schema.Types.ObjectId, ref: "Vote" },
   cover_bom: {
     type: String,
@@ -50,4 +50,4 @@ const schema = new mongoose.Schema({
   },
 })
 
-module.exports = mongoose.model("VoteItem", schema)
+module.exports = mongoose.model("Item", voteItem)
