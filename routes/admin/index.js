@@ -157,12 +157,13 @@ module.exports = (app, acl) => {
 
     res.send({ code: 1, token, msg: "注册成功" })
   })
-
-  router.post(
+  // 创建投票
+  app.post(
     "/admin/api/create",
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
+      console.log(req.body)
       const { title, start_time, end_time, content } = req.body
       if (!title || !start_time || !end_time) {
         return res.status(422).send({ code: 0, msg: "内容不能为空！" })
@@ -179,9 +180,22 @@ module.exports = (app, acl) => {
         voteId: newVote._id,
       })
 
-      res.send({ code: 1, msg: "创建成功" })
+      res.send({ code: 1, data:{id:newVote._id},msg: "创建成功" })
     }
   )
+  // 高级设置
+
+  app.post(
+    "/admin/api/more/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req,res)=>{
+      const voteMore = await AdminVoteRule.findOneAndUpdate({voteId:req.params.id},req.body)
+      console.log(voteMore)
+      res.send({ code: 1,msg: "保存成功" })
+  })
+
+
   app.get(
     "/admin/api/user",
     authMiddleware(),

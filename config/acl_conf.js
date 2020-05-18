@@ -4,7 +4,7 @@ module.exports = [
     allows: [
       { resources: ["/admin/api/user"], permissions: ["get"] },
       {
-        resources: ["/admin/api/creat"],
+        resources: ["/admin/api/create","/admin/api/more/:id"],
         permissions: ["post"],
       },
     ],
@@ -14,7 +14,7 @@ module.exports = [
     allows: [
       { resources: ["/admin/api/user", "/admin/sign"], permissions: ["get"] },
       {
-        resources: ["/admin/api/creat"],
+        resources: ["/admin/api/create","/admin/api/more/:id"],
         permissions: ["post"],
       },
     ],
@@ -24,7 +24,7 @@ module.exports = [
     allows: [
       { resources: ["/admin/api/user", "/admin/sign"], permissions: ["get"] },
       {
-        resources: ["/admin/api/creat"],
+        resources: ["/admin/api/create"],
         permissions: ["post"],
       },
     ],
@@ -37,7 +37,7 @@ module.exports = [
         permissions: ["get"],
       },
       {
-        resources: ["/admin/api/creat"],
+        resources: ["/admin/api/create"],
         permissions: ["post"],
       },
     ],
@@ -50,7 +50,7 @@ module.exports = [
         permissions: ["get"],
       },
       {
-        resources: ["/admin/api/creat"],
+        resources: ["/admin/api/create"],
         permissions: ["post"],
       },
     ],
