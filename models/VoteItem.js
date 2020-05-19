@@ -13,40 +13,49 @@ const voteItem = new Schema({
   },
   gift_count: {
     type: Number,
+    default: 0,
   },
   gift_vote_count: {
     type: Number,
+    default: 0,
   },
   index: {
     type: Number,
   },
   is_examine: {
     type: Number,
+    default: 1,
   },
   is_lock: {
     type: Number,
+    default: 0,
   },
   is_video: {
     type: Number,
+    default: 0,
   },
   link: {
     type: String,
   },
   progress: {
-    diff: { type: String },
+    diff: { type: Number, default: 1 },
     is_cache: { type: Number },
-    progress: { type: Number },
-    rank: { type: String },
+    progress: { type: Number, default: 0 },
+    rank: { type: String, default: "-" },
   },
-  read_count: { type: Number },
-  share_sns_count: { type: Number },
-  share_wx_count: { type: Number },
-  title: { type: String },
+  read_count: { type: Number, default: 0 },
+  share_sns_count: { type: Number, default: 0 },
+  share_wx_count: { type: Number, default: 0 },
+  title: { type: String, default: "" },
   slogan: { type: String },
-  vote_count: { type: Number },
-  vote_item_type_id: { type: Number },
+  vote_count: { type: Number, default: 0 },
+  vote_item_type_id: { type: Number, default: 0 },
   content: {
     type: String,
+    default: "",
+  },
+  create_time: {
+    type: Date,
   },
 })
 

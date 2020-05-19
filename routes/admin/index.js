@@ -180,7 +180,24 @@ module.exports = (app, acl) => {
         voteId: newVote._id,
       })
 
-      res.send({ code: 1, data:{id:newVote._id},msg: "创建成功" })
+      res.send({ code: 1, data: { id: newVote._id }, msg: "创建成功" })
+    }
+  )
+
+  // 选手设置
+  app.post(
+    "/admin/api/item/create/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      let cover_url = "https://i.loli.net/2020/05/19/U7txe24LPd1rDBk.png"
+      let voteId = req.params.id
+      let newVoteItem = await AdminVoteItem.create({
+        voteId,
+        cover_url,
+      })
+      console.log(newVoteItem)
+      res.send({ code: 1, data: { vote_item: newVoteItem }, msg: "添加成功" })
     }
   )
   // 高级设置
@@ -189,12 +206,15 @@ module.exports = (app, acl) => {
     "/admin/api/more/:id",
     authMiddleware(),
     privilegeMiddleware(acl),
-    async (req,res)=>{
-      const voteMore = await AdminVoteRule.findOneAndUpdate({voteId:req.params.id},req.body)
+    async (req, res) => {
+      const voteMore = await AdminVoteRule.findOneAndUpdate(
+        { voteId: req.params.id },
+        req.body
+      )
       console.log(voteMore)
-      res.send({ code: 1,msg: "保存成功" })
-  })
-
+      res.send({ code: 1, msg: "保存成功" })
+    }
+  )
 
   app.get(
     "/admin/api/user",

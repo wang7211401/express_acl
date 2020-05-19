@@ -12,6 +12,13 @@ const schema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  create_time: {
+    type: Date,
+  },
+  update_time: {
+    type: Date,
+    default: Date.now(),
+  },
 })
 
 module.exports = mongoose.model("Vote", schema)
