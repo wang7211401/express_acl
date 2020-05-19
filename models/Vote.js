@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
-
-const schema = new mongoose.Schema({
+const Schema =  mongoose.Schema
+const schema = new Schema({
+  userId:{ type: Schema.Types.ObjectId, ref: "AdminUser" },
   title: { type: String },
   start_time: {
     type: Date,

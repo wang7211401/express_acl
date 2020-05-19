@@ -62,22 +62,29 @@ module.exports = (app, acl) => {
   //   router
   // )
 
-  // const multer = require("multer")
+  const multer = require("multer")
 
-  // const upload = multer({
-  //   dest: __dirname + "../../../uploads",
-  // })
+  const upload = multer({
+    dest: __dirname + "../../../uploads",
+  })
 
-  // app.post(
-  //   "/admin/api/upload",
-  //   authMiddleware(),
-  //   upload.single("file"),
-  //   async (req, res) => {
-  //     const file = req.file
-  //     file.url = `http://127.0.0.1:3000/uploads/${file.filename}`
-  //     res.send(file)
-  //   }
-  // )
+  app.post(
+    "/admin/api/upload/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    upload.single("file"),
+    async (req, res) => {
+      const file = req.file
+      file.url = `http://127.0.0.1:3000/uploads/${file.filename}`
+      let voteItem = await AdminVoteItem.findByIdAndUpdate(
+        req.params.id,
+        {cover_url:file.url}
+      )
+      res.send({code:1,data:{
+        url:file.url
+      },msg:"上传成功"})
+    }
+  )
 
   app.post("/admin/api/login", async (req, res) => {
     const { username, password } = req.body
@@ -157,6 +164,28 @@ module.exports = (app, acl) => {
 
     res.send({ code: 1, token, msg: "注册成功" })
   })
+  // 查询活动列表
+  app.get("/admin/api/vote/list",
+  authMiddleware(),
+  privilegeMiddleware(acl),
+  async (req,res)=>{
+
+    const size = req.query.size || 10
+    const page = req.query.page || 1
+
+    const count = await AdminVote.find({
+      userId:req.user._id
+    }).count()
+
+    const userList = await AdminVote.find({
+      userId:req.user._id
+    }).lean()
+    .populate("userId")
+    .skip((parseInt(page) - 1) * size).limit(size)
+  
+
+    res.send({ code: 1, data: { userList,count}, msg: "" })
+  })
   // 创建投票
   app.post(
     "/admin/api/create",
@@ -168,12 +197,14 @@ module.exports = (app, acl) => {
       if (!title || !start_time || !end_time) {
         return res.status(422).send({ code: 0, msg: "内容不能为空！" })
       }
-
+      let create_time = Date.now()
       const newVote = await AdminVote.create({
+        userId:req.user._id,
         title,
         start_time,
         end_time,
         content,
+        create_time
       })
 
       const newVoteRule = await AdminVoteRule.create({
@@ -192,12 +223,41 @@ module.exports = (app, acl) => {
     async (req, res) => {
       let cover_url = "https://i.loli.net/2020/05/19/U7txe24LPd1rDBk.png"
       let voteId = req.params.id
+      let create_time = Date.now()
       let newVoteItem = await AdminVoteItem.create({
         voteId,
         cover_url,
+        create_time
       })
       console.log(newVoteItem)
       res.send({ code: 1, data: { vote_item: newVoteItem }, msg: "添加成功" })
+    }
+  )
+
+  app.post(
+    "/admin/api/item/update/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      let voteItem = await AdminVoteItem.findOneAndUpdate(
+        {voteId:req.params.id},
+        req.body
+      )
+      console.log(voteItem)
+      res.send({ code: 1, msg: "修改成功" })
+    }
+  )
+
+  app.post(
+    "/admin/api/item/delete/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      let voteItem = await AdminVoteItem.deleteOne(
+        {voteId:req.params.id}
+      )
+      console.log(voteItem)
+      res.send({ code: 1, msg: "删除成功" })
     }
   )
   // 高级设置
