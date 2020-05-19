@@ -49,7 +49,7 @@ const voteItem = new Schema({
   title: { type: String, default: "" },
   slogan: { type: String },
   vote_count: { type: Number, default: 0 },
-  vote_item_type_id: { type: Number, default: 0 },
+  vote_item_type_id: {  type: Schema.Types.ObjectId, ref: "VoteType" },
   content: {
     type: String,
     default: "",
