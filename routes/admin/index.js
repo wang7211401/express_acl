@@ -6,6 +6,7 @@ module.exports = (app, acl) => {
   const AdminUser = require("../../models/AdminUser")
   const AdminVote = require("../../models/Vote")
   const AdminVoteItem = require("../../models/VoteItem")
+  const AdminVoteType = require("../../models/VoteType")
   const AdminVoteRule = require("../../models/VoteRule")
   const router = express.Router({
     mergeParams: true,
@@ -76,13 +77,16 @@ module.exports = (app, acl) => {
     async (req, res) => {
       const file = req.file
       file.url = `http://127.0.0.1:3000/uploads/${file.filename}`
-      let voteItem = await AdminVoteItem.findByIdAndUpdate(
-        req.params.id,
-        {cover_url:file.url}
-      )
-      res.send({code:1,data:{
-        url:file.url
-      },msg:"上传成功"})
+      let voteItem = await AdminVoteItem.findByIdAndUpdate(req.params.id, {
+        cover_url: file.url,
+      })
+      res.send({
+        code: 1,
+        data: {
+          url: file.url,
+        },
+        msg: "上传成功",
+      })
     }
   )
 
@@ -165,27 +169,29 @@ module.exports = (app, acl) => {
     res.send({ code: 1, token, msg: "注册成功" })
   })
   // 查询活动列表
-  app.get("/admin/api/vote/list",
-  authMiddleware(),
-  privilegeMiddleware(acl),
-  async (req,res)=>{
+  app.get(
+    "/admin/api/vote/list",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      const size = req.query.size || 10
+      const page = req.query.page || 1
 
-    const size = req.query.size || 10
-    const page = req.query.page || 1
+      const count = await AdminVote.find({
+        userId: req.user._id,
+      }).count()
 
-    const count = await AdminVote.find({
-      userId:req.user._id
-    }).count()
+      const userList = await AdminVote.find({
+        userId: req.user._id,
+      })
+        .lean()
+        .populate("userId")
+        .skip((parseInt(page) - 1) * size)
+        .limit(size)
 
-    const userList = await AdminVote.find({
-      userId:req.user._id
-    }).lean()
-    .populate("userId")
-    .skip((parseInt(page) - 1) * size).limit(size)
-  
-
-    res.send({ code: 1, data: { userList,count}, msg: "" })
-  })
+      res.send({ code: 1, data: { userList, count }, msg: "" })
+    }
+  )
   // 创建投票
   app.post(
     "/admin/api/create",
@@ -199,12 +205,12 @@ module.exports = (app, acl) => {
       }
       let create_time = Date.now()
       const newVote = await AdminVote.create({
-        userId:req.user._id,
+        userId: req.user._id,
         title,
         start_time,
         end_time,
         content,
-        create_time
+        create_time,
       })
 
       const newVoteRule = await AdminVoteRule.create({
@@ -214,8 +220,34 @@ module.exports = (app, acl) => {
       res.send({ code: 1, data: { id: newVote._id }, msg: "创建成功" })
     }
   )
+  // 查询选手
+  app.get(
+    "/admin/api/item/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      const size = req.query.size || 10
+      const page = req.query.page || 1
+      let voteId = req.params.id
+      let count = await AdminVoteItem.find({
+        voteId,
+        is_del: 0,
+      }).count()
 
-  // 选手设置
+      let voteItemList = await AdminVoteItem.find({
+        voteId,
+        is_del: 0,
+      })
+        .lean()
+        .populate("vote_item_type_id")
+        .skip((parseInt(page) - 1) * size)
+        .limit(size)
+
+      console.log(voteItemList)
+      res.send({ code: 1, data: { vote_item: voteItemList, count }, msg: "" })
+    }
+  )
+  // 新增选手
   app.post(
     "/admin/api/item/create/:id",
     authMiddleware(),
@@ -227,20 +259,25 @@ module.exports = (app, acl) => {
       let newVoteItem = await AdminVoteItem.create({
         voteId,
         cover_url,
-        create_time
+        create_time,
       })
       console.log(newVoteItem)
       res.send({ code: 1, data: { vote_item: newVoteItem }, msg: "添加成功" })
     }
   )
 
+  // 选手更新
   app.post(
     "/admin/api/item/update/:id",
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      let voteItem = await AdminVoteItem.findOneAndUpdate(
-        {voteId:req.params.id},
+      // let { itemId } = req.body
+      // if (!itemId) {
+      //   return res.send({ code: 0, msg: "选手id 不能为空" })
+      // }
+      let voteItem = await AdminVoteItem.findByIdAndUpdate(
+        req.params.id,
         req.body
       )
       console.log(voteItem)
@@ -248,20 +285,81 @@ module.exports = (app, acl) => {
     }
   )
 
+  // 删除选手
   app.post(
     "/admin/api/item/delete/:id",
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      let voteItem = await AdminVoteItem.deleteOne(
-        {voteId:req.params.id}
-      )
+      let voteItem = await AdminVoteItem.findByIdAndUpdate(req.params.id, {
+        is_del: 1,
+      })
       console.log(voteItem)
       res.send({ code: 1, msg: "删除成功" })
     }
   )
-  // 高级设置
 
+  // 查询分类
+  app.get(
+    "/admin/api/type/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      let voteTypeList = await AdminVoteType.find({
+        voteId: req.params.id,
+      })
+      res.send({ code: 1, data: { vote_type: voteTypeList }, msg: "" })
+    }
+  )
+  // 新增分类
+  app.post(
+    "/admin/api/type/create/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      let create_time = Date.now()
+      let voteId = req.params.id
+      let { title } = req.body
+      if (!title) {
+        return res.send({ code: 0, msg: "分类标题不能为空" })
+      }
+      let newVoteType = await AdminVoteType.create({
+        voteId,
+        title,
+        create_time,
+      })
+      console.log(newVoteType)
+      res.send({ code: 1, data: { vote_type: newVoteType }, msg: "添加成功" })
+    }
+  )
+  // 更新分类
+  app.post(
+    "/admin/api/type/update/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      let voteType = await AdminVoteType.findByIdAndUpdate(
+        req.params.id,
+        req.body
+      )
+      console.log(voteType)
+      res.send({ code: 1, msg: "修改成功" })
+    }
+  )
+
+  // 删除分类
+  app.post(
+    "/admin/api/type/delete/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      let voteType = await AdminVoteType.findByIdAndDelete(req.params.id)
+      console.log(voteType)
+      res.send({ code: 1, msg: "删除成功" })
+    }
+  )
+
+  // 高级设置
   app.post(
     "/admin/api/more/:id",
     authMiddleware(),

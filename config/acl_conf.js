@@ -2,7 +2,15 @@ module.exports = [
   {
     roles: "normal", // 一般用户
     allows: [
-      { resources: ["/admin/api/user","/admin/api/vote/list"], permissions: ["get"] },
+      {
+        resources: [
+          "/admin/api/user",
+          "/admin/api/vote/list",
+          "/admin/api/item/:id",
+          "/admin/api/type/:id",
+        ],
+        permissions: ["get"],
+      },
       {
         resources: [
           "/admin/api/create",
@@ -10,7 +18,10 @@ module.exports = [
           "/admin/api/item/create/:id",
           "/admin/api/item/update/:id",
           "/admin/api/item/delete/:id",
-          "/admin/api/upload/:id"
+          "/admin/api/upload/:id",
+          "/admin/api/type/create/:id",
+          "/admin/api/type/update/:id",
+          "/admin/api/type/delete/:id",
         ],
         permissions: ["post"],
       },
@@ -19,7 +30,16 @@ module.exports = [
   {
     roles: "member", // 会员
     allows: [
-      { resources: ["/admin/api/user", "/admin/sign","/admin/api/vote/list"], permissions: ["get"] },
+      {
+        resources: [
+          "/admin/api/user",
+          "/admin/sign",
+          "/admin/api/vote/list",
+          "/admin/api/item/:id",
+          "/admin/api/type/:id",
+        ],
+        permissions: ["get"],
+      },
       {
         resources: [
           "/admin/api/create",
@@ -27,7 +47,10 @@ module.exports = [
           "/admin/api/item/create/:id",
           "/admin/api/item/update/:id",
           "/admin/api/item/delete/:id",
-          "/admin/api/upload/:id"
+          "/admin/api/upload/:id",
+          "/admin/api/type/create/:id",
+          "/admin/api/type/update/:id",
+          "/admin/api/type/delete/:id",
         ],
         permissions: ["post"],
       },
@@ -44,7 +67,7 @@ module.exports = [
           "/admin/api/item/create/:id",
           "/admin/api/item/update/:id",
           "/admin/api/item/delete/:id",
-          "/admin/api/upload/:id"
+          "/admin/api/upload/:id",
         ],
         permissions: ["post"],
       },
@@ -64,7 +87,7 @@ module.exports = [
           "/admin/api/item/create/:id",
           "/admin/api/item/update/:id",
           "/admin/api/item/delete/:id",
-          "/admin/api/upload/:id"
+          "/admin/api/upload/:id",
         ],
         permissions: ["post"],
       },
@@ -84,7 +107,7 @@ module.exports = [
           "/admin/api/item/create/:id",
           "/admin/api/item/update/:id",
           "/admin/api/item/delete/:id",
-          "/admin/api/upload/:id"
+          "/admin/api/upload/:id",
         ],
         permissions: ["post"],
       },

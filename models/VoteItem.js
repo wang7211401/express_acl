@@ -49,13 +49,21 @@ const voteItem = new Schema({
   title: { type: String, default: "" },
   slogan: { type: String },
   vote_count: { type: Number, default: 0 },
-  vote_item_type_id: {  type: Schema.Types.ObjectId, ref: "VoteType" },
+  vote_item_type_id: { type: Schema.Types.ObjectId, ref: "VoteType" },
   content: {
     type: String,
     default: "",
   },
+  is_del: {
+    type: Number,
+    default: 0,
+  },
   create_time: {
     type: Date,
+  },
+  update_time: {
+    type: Date,
+    default: Date.now,
   },
 })
 
