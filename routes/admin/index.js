@@ -83,7 +83,7 @@ module.exports = (app, acl) => {
       res.send({
         code: 1,
         data: {
-          url: file.url,
+          cover_url: file.url,
         },
         msg: "上传成功",
       })
