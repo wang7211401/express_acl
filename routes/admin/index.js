@@ -84,6 +84,7 @@ module.exports = (app, acl) => {
         code: 1,
         data: {
           cover_url: file.url,
+          itemId:req.params.id
         },
         msg: "上传成功",
       })
@@ -192,6 +193,16 @@ module.exports = (app, acl) => {
       res.send({ code: 1, data: { userList, count }, msg: "" })
     }
   )
+  // 查询单个投票
+  app.get(
+    "/admin/api/vote/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req,res)=>{
+      const voteItem= await AdminVote.findById(req.params.id)
+      res.send({ code: 1, data: {voteItem }, msg: "" })
+    }
+  )
   // 创建投票
   app.post(
     "/admin/api/create",
@@ -218,6 +229,29 @@ module.exports = (app, acl) => {
       })
 
       res.send({ code: 1, data: { id: newVote._id }, msg: "创建成功" })
+    }
+  )
+  // 修改单个投票
+  app.post(
+    "/admin/api/edit/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      const { title, start_time, end_time, content } = req.body
+      if (!title || !start_time || !end_time) {
+        return res.status(422).send({ code: 0, msg: "内容不能为空！" })
+      }
+      
+      const newVote = await AdminVote.findByIdAndUpdate(
+        req.params.id,
+        {
+          title,
+          start_time,
+          end_time,
+          content,  
+        })
+
+      res.send({ code: 1, msg: "修改成功" })
     }
   )
   // 查询选手

@@ -6,6 +6,7 @@ module.exports = [
         resources: [
           "/admin/api/user",
           "/admin/api/vote/list",
+          "/admin/api/vote/:id",
           "/admin/api/item/:id",
           "/admin/api/type/:id",
         ],
@@ -14,6 +15,7 @@ module.exports = [
       {
         resources: [
           "/admin/api/create",
+          "/admin/api/edit/:id",
           "/admin/api/more/:id",
           "/admin/api/item/create/:id",
           "/admin/api/item/update/:id",
@@ -35,6 +37,7 @@ module.exports = [
           "/admin/api/user",
           "/admin/sign",
           "/admin/api/vote/list",
+          "/admin/api/vote/:id",
           "/admin/api/item/:id",
           "/admin/api/type/:id",
         ],
@@ -43,6 +46,7 @@ module.exports = [
       {
         resources: [
           "/admin/api/create",
+          "/admin/api/edit/:id",
           "/admin/api/more/:id",
           "/admin/api/item/create/:id",
           "/admin/api/item/update/:id",
