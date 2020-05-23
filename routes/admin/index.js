@@ -8,6 +8,7 @@ module.exports = (app, acl) => {
   const AdminVoteItem = require("../../models/VoteItem")
   const AdminVoteType = require("../../models/VoteType")
   const AdminVoteRule = require("../../models/VoteRule")
+  const { statusObj } = require("../../plugins/plugin")
   const router = express.Router({
     mergeParams: true,
   })
@@ -84,7 +85,7 @@ module.exports = (app, acl) => {
         code: 1,
         data: {
           cover_url: file.url,
-          itemId:req.params.id
+          itemId: req.params.id,
         },
         msg: "上传成功",
       })
@@ -190,6 +191,12 @@ module.exports = (app, acl) => {
         .skip((parseInt(page) - 1) * size)
         .limit(size)
 
+      userList.forEach((val) => {
+        let obj = statusObj(val.start_time, val.end_time)
+        val.status = obj.status
+        val.status_text = obj.status_text
+      })
+
       res.send({ code: 1, data: { userList, count }, msg: "" })
     }
   )
@@ -198,9 +205,9 @@ module.exports = (app, acl) => {
     "/admin/api/vote/:id",
     authMiddleware(),
     privilegeMiddleware(acl),
-    async (req,res)=>{
-      const voteItem= await AdminVote.findById(req.params.id)
-      res.send({ code: 1, data: {voteItem }, msg: "" })
+    async (req, res) => {
+      const voteItem = await AdminVote.findById(req.params.id)
+      res.send({ code: 1, data: { voteItem }, msg: "" })
     }
   )
   // 创建投票
@@ -214,7 +221,6 @@ module.exports = (app, acl) => {
       if (!title || !start_time || !end_time) {
         return res.status(422).send({ code: 0, msg: "内容不能为空！" })
       }
-      let create_time = Date.now()
       const newVote = await AdminVote.create({
         userId: req.user._id,
         title,
@@ -241,15 +247,13 @@ module.exports = (app, acl) => {
       if (!title || !start_time || !end_time) {
         return res.status(422).send({ code: 0, msg: "内容不能为空！" })
       }
-      
-      const newVote = await AdminVote.findByIdAndUpdate(
-        req.params.id,
-        {
-          title,
-          start_time,
-          end_time,
-          content,  
-        })
+
+      const newVote = await AdminVote.findByIdAndUpdate(req.params.id, {
+        title,
+        start_time,
+        end_time,
+        content,
+      })
 
       res.send({ code: 1, msg: "修改成功" })
     }

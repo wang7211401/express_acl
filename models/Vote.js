@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
-const Schema =  mongoose.Schema
+const Schema = mongoose.Schema
 const schema = new Schema({
-  userId:{ type: Schema.Types.ObjectId, ref: "AdminUser" },
+  userId: { type: Schema.Types.ObjectId, ref: "AdminUser" },
   title: { type: String },
   start_time: {
     type: Date,
@@ -12,6 +12,14 @@ const schema = new Schema({
   content: {
     type: String,
     default: "",
+  },
+  read_count: {
+    type: Number,
+    default: 0,
+  },
+  vote_item_count: {
+    type: Number,
+    default: 0,
   },
   create_time: {
     type: Date,
