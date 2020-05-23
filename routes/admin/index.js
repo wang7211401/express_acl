@@ -8,7 +8,7 @@ module.exports = (app, acl) => {
   const AdminVoteItem = require("../../models/VoteItem")
   const AdminVoteType = require("../../models/VoteType")
   const AdminVoteRule = require("../../models/VoteRule")
-  const { statusObj } = require("../../plugins/plugin")
+  const { plugin } = require("../../plugins/plugin")
   const router = express.Router({
     mergeParams: true,
   })
@@ -192,12 +192,23 @@ module.exports = (app, acl) => {
         .limit(size)
 
       userList.forEach((val) => {
-        let obj = statusObj(val.start_time, val.end_time)
+        let obj = plugin.statusObj(val.start_time, val.end_time)
         val.status = obj.status
         val.status_text = obj.status_text
+        val.start_time = plugin.formatDate(val.start_time)
+        val.end_time = plugin.formatDate(val.end_time)
+        val.create_time = plugin.formatDate(val.create_time)
+        val.update_time = plugin.formatDate(val.update_time)
       })
 
-      res.send({ code: 1, data: { userList, count }, msg: "" })
+      res.send({
+        code: 1,
+        data: {
+          userList,
+          count,
+        },
+        msg: "",
+      })
     }
   )
   // 查询单个投票
@@ -299,6 +310,15 @@ module.exports = (app, acl) => {
         cover_url,
         create_time,
       })
+
+      let count = await AdminVoteItem.find({
+        is_del: 0,
+      }).count()
+
+      await AdminVote.findByIdAndUpdate(voteId, {
+        vote_count: count,
+      })
+
       console.log(newVoteItem)
       res.send({ code: 1, data: { vote_item: newVoteItem }, msg: "添加成功" })
     }
@@ -310,14 +330,20 @@ module.exports = (app, acl) => {
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      // let { itemId } = req.body
-      // if (!itemId) {
-      //   return res.send({ code: 0, msg: "选手id 不能为空" })
+      // {
+      //   itemID: '2313',
+      //   tag: 'key',
+      //   value:'value'
       // }
-      let voteItem = await AdminVoteItem.findByIdAndUpdate(
-        req.params.id,
-        req.body
-      )
+
+      let { itemId, tag, value } = req.body
+      let obj = {}
+      obj[tag] = value
+
+      if (!itemId) {
+        return res.send({ code: 0, msg: "选手id 不能为空" })
+      }
+      let voteItem = await AdminVoteItem.findByIdAndUpdate(itemId, obj)
       console.log(voteItem)
       res.send({ code: 1, msg: "修改成功" })
     }
@@ -329,10 +355,24 @@ module.exports = (app, acl) => {
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      let voteItem = await AdminVoteItem.findByIdAndUpdate(req.params.id, {
+      let voteId = req.params.id
+      let { itemId } = req.body
+
+      if (!itemId) {
+        return res.send({ code: 0, msg: "选手id不能为空" })
+      }
+      let voteItem = await AdminVoteItem.findByIdAndUpdate(itemId, {
         is_del: 1,
       })
-      console.log(voteItem)
+
+      let count = await AdminVoteItem.find({
+        is_del: 0,
+      }).count()
+
+      await AdminVote.findByIdAndUpdate(voteId, {
+        vote_count: count,
+      })
+
       res.send({ code: 1, msg: "删除成功" })
     }
   )
@@ -361,6 +401,12 @@ module.exports = (app, acl) => {
       if (!title) {
         return res.send({ code: 0, msg: "分类标题不能为空" })
       }
+      let _VoteType = await AdminVoteType.findOne({
+        title,
+      })
+      if (_VoteType) {
+        return res.send({ code: 0, msg: "分类标题已存在" })
+      }
       let newVoteType = await AdminVoteType.create({
         voteId,
         title,
@@ -376,10 +422,14 @@ module.exports = (app, acl) => {
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      let voteType = await AdminVoteType.findByIdAndUpdate(
-        req.params.id,
-        req.body
-      )
+      let voteId = req.params.id
+      let { typeId, title } = req.body
+
+      if (!typeId) {
+        return res.send({ code: 0, msg: "分类id不能为空" })
+      }
+
+      let voteType = await AdminVoteType.findByIdAndUpdate(typeId, { title })
       console.log(voteType)
       res.send({ code: 1, msg: "修改成功" })
     }
@@ -391,7 +441,13 @@ module.exports = (app, acl) => {
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      let voteType = await AdminVoteType.findByIdAndDelete(req.params.id)
+      let voteId = req.params.id
+      let { typeId } = req.body
+
+      if (!typeId) {
+        return res.send({ code: 0, msg: "分类id不能为空" })
+      }
+      let voteType = await AdminVoteType.findByIdAndDelete(typeId)
       console.log(voteType)
       res.send({ code: 1, msg: "删除成功" })
     }
@@ -417,7 +473,7 @@ module.exports = (app, acl) => {
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      res.send({ code: 1, user: req.user })
+      res.send({ code: 1, data: { user: req.user }, msg: "" })
     }
   )
 

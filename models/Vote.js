@@ -13,6 +13,10 @@ const schema = new Schema({
     type: String,
     default: "",
   },
+  vote_count: {
+    type: Number,
+    default: 0,
+  },
   read_count: {
     type: Number,
     default: 0,
@@ -26,7 +30,7 @@ const schema = new Schema({
   },
   update_time: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
 })
 
