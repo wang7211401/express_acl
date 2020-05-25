@@ -470,10 +470,22 @@ module.exports = (app, acl) => {
       res.send({ code: 1, msg: "删除成功" })
     }
   )
+  
+  // 查询设置
+  app.get(
+    "/admin/api/more/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req,res)=>{
+      const voteMore = await AdminVoteRule.findOneAndUpdate(
+        { voteId: req.params.id }
+      )
 
+      res.send({code:1,data:{voteMore},msg:''})
+    })
   // 高级设置
   app.post(
-    "/admin/api/more/:id",
+    "/admin/api/more/update/:id",
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {

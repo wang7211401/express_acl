@@ -54,7 +54,7 @@ const voteRule = new Schema({
   },
   display_copyright: {
     type: Number,
-    default: 0,
+    default: 1,
   },
   display_navbar_self: {
     type: Number,
@@ -118,7 +118,7 @@ const voteRule = new Schema({
   },
   rule_item_times: {
     type: Number,
-    default: 0,
+    default: 1,
   },
   rule_max: {
     type: Number,
@@ -130,11 +130,11 @@ const voteRule = new Schema({
   },
   rule_times: {
     type: Number,
-    default: 0,
+    default: 5,
   },
   rule_type: {
     type: Number,
-    default: 0,
+    default: 1,
   },
   sign_form: {
     type: Number,
@@ -166,19 +166,19 @@ const voteRule = new Schema({
   },
   style_color: {
     type: Number,
-    default: 0,
+    default: 1,
   },
   style_tpl: {
     type: Number,
-    default: 0,
+    default: 1,
   },
   text_copyright: {
-    type: Number,
-    default: 0,
+    type: String,
+    default: "",
   },
   text_notice: {
-    type: Number,
-    default: 0,
+    type: String,
+    default: "",
   },
   text_vote_btn_name: {
     type: Number,
@@ -212,6 +212,18 @@ const voteRule = new Schema({
     type: Number,
     default: 0,
   },
+  display_index_column:{
+    type:Number,
+    default:2
+  },
+  rule_text:{
+    type:String,
+    default:''
+  },
+  rule_custom_text:{
+    type:String,
+    default:""
+  }
 })
 
 module.exports = mongoose.model("Rule", voteRule)
