@@ -11,7 +11,7 @@ module.exports = function auth(acl) {
     if (resource[resource.length - 1] === "/") {
       resource = resource.slice(0, -1)
     }
-    console.log(String(req.user._id))
+
     let role = await acl.hasRole(String(req.user._id), "root")
 
     if (role) {

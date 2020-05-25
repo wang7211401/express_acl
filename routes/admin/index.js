@@ -94,7 +94,7 @@ module.exports = (app, acl) => {
 
   app.post("/admin/api/login", async (req, res) => {
     const { username, password } = req.body
-    console.log(username, password)
+
     if (!username || !password) {
       return res.send({ code: 0, msg: "用户名或密码不能为空！" })
     }
@@ -136,7 +136,7 @@ module.exports = (app, acl) => {
 
   app.post("/admin/api/register", async (req, res) => {
     const { username, password, checkPassword } = req.body
-    console.log(username)
+
     if (!username || !password || !checkPassword) {
       return res.status(422).send({ code: 0, msg: "用户名或密码不能为空！" })
     }
@@ -227,8 +227,8 @@ module.exports = (app, acl) => {
     authMiddleware(),
     privilegeMiddleware(acl),
     async (req, res) => {
-      console.log(req.body)
       const { title, start_time, end_time, content } = req.body
+      let create_time = Date.now()
       if (!title || !start_time || !end_time) {
         return res.status(422).send({ code: 0, msg: "内容不能为空！" })
       }
@@ -292,7 +292,11 @@ module.exports = (app, acl) => {
         .skip((parseInt(page) - 1) * size)
         .limit(size)
 
-      console.log(voteItemList)
+      voteItemList.forEach((val) => {
+        val.create_time = plugin.formatDate(val.create_time)
+        val.update_time = plugin.formatDate(val.update_time)
+      })
+
       res.send({ code: 1, data: { vote_item: voteItemList, count }, msg: "" })
     }
   )
@@ -305,22 +309,35 @@ module.exports = (app, acl) => {
       let cover_url = "https://i.loli.net/2020/05/19/U7txe24LPd1rDBk.png"
       let voteId = req.params.id
       let create_time = Date.now()
+
+      let voteItemCount = await AdminVoteItem.find({ voteId }).count()
+
+      console.log(voteItemCount)
+      let index = voteItemCount + 1
       let newVoteItem = await AdminVoteItem.create({
         voteId,
         cover_url,
         create_time,
+        index,
       })
 
       let count = await AdminVoteItem.find({
+        voteId,
         is_del: 0,
       }).count()
 
       await AdminVote.findByIdAndUpdate(voteId, {
-        vote_count: count,
+        vote_item_count: count,
       })
 
-      console.log(newVoteItem)
-      res.send({ code: 1, data: { vote_item: newVoteItem }, msg: "添加成功" })
+      let local_create_time = plugin.formatDate(newVoteItem.create_time)
+      let local_update_time = plugin.formatDate(newVoteItem.update_time)
+
+      res.send({
+        code: 1,
+        data: { vote_item: newVoteItem, local_create_time, local_update_time },
+        msg: "添加成功",
+      })
     }
   )
 
@@ -344,7 +361,7 @@ module.exports = (app, acl) => {
         return res.send({ code: 0, msg: "选手id 不能为空" })
       }
       let voteItem = await AdminVoteItem.findByIdAndUpdate(itemId, obj)
-      console.log(voteItem)
+
       res.send({ code: 1, msg: "修改成功" })
     }
   )
@@ -402,6 +419,7 @@ module.exports = (app, acl) => {
         return res.send({ code: 0, msg: "分类标题不能为空" })
       }
       let _VoteType = await AdminVoteType.findOne({
+        voteId,
         title,
       })
       if (_VoteType) {
@@ -412,7 +430,7 @@ module.exports = (app, acl) => {
         title,
         create_time,
       })
-      console.log(newVoteType)
+
       res.send({ code: 1, data: { vote_type: newVoteType }, msg: "添加成功" })
     }
   )
@@ -430,7 +448,7 @@ module.exports = (app, acl) => {
       }
 
       let voteType = await AdminVoteType.findByIdAndUpdate(typeId, { title })
-      console.log(voteType)
+
       res.send({ code: 1, msg: "修改成功" })
     }
   )
@@ -448,7 +466,7 @@ module.exports = (app, acl) => {
         return res.send({ code: 0, msg: "分类id不能为空" })
       }
       let voteType = await AdminVoteType.findByIdAndDelete(typeId)
-      console.log(voteType)
+
       res.send({ code: 1, msg: "删除成功" })
     }
   )
@@ -463,7 +481,7 @@ module.exports = (app, acl) => {
         { voteId: req.params.id },
         req.body
       )
-      console.log(voteMore)
+
       res.send({ code: 1, msg: "保存成功" })
     }
   )
