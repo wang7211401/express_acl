@@ -181,16 +181,16 @@ const voteRule = new Schema({
     default: "",
   },
   text_vote_btn_name: {
-    type: Number,
-    default: 0,
+    type: String,
+    default: "投票",
   },
   text_vote_item_alias: {
-    type: Number,
-    default: 0,
+    type: String,
+    default: "选手",
   },
   text_vote_unit: {
-    type: Number,
-    default: 0,
+    type: String,
+    default: "票",
   },
   vote_banner_count: {
     type: Number,
@@ -212,18 +212,232 @@ const voteRule = new Schema({
     type: Number,
     default: 0,
   },
-  display_index_column:{
-    type:Number,
-    default:2
+  display_index_column: {
+    type: Number,
+    default: 2,
   },
-  rule_text:{
-    type:String,
-    default:''
+  rule_text: {
+    type: String,
+    default: "",
   },
-  rule_custom_text:{
-    type:String,
-    default:""
-  }
+  rule_custom_text: {
+    type: String,
+    default: "",
+  },
+  page_vote_item_type_column: {
+    type: Number,
+    default: 2,
+  },
+  page_vote_item_load_type: {
+    type: Number,
+    default: 1,
+  },
+  display_vote_item_count: {
+    type: Number,
+    default: 0,
+  },
+  display_vote_count: {
+    type: Number,
+    default: 0,
+  },
+  display_read_count: {
+    type: Number,
+    default: 0,
+  },
+  display_index_banner: {
+    type: Number,
+    default: 1,
+  },
+  display_index_title: {
+    type: Number,
+    default: 1,
+  },
+  display_index_data: {
+    type: Number,
+    default: 1,
+  },
+  display_index_rule: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_type: {
+    type: Number,
+    default: 1,
+  },
+  display_index_search: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_number: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_cover: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_name: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_slogan: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_count: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_button: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_detail: {
+    type: Number,
+    default: 1,
+  },
+  display_index_show_type: {
+    type: Number,
+    default: 1,
+  },
+  display_index_sort: {
+    type: Number,
+    default: 1,
+  },
+  display_index_vote_item_type_all_button: {
+    type: Number,
+    default: 1,
+  },
+  display_content_banner: {
+    type: Number,
+    default: 1,
+  },
+  display_content_title: {
+    type: Number,
+    default: 1,
+  },
+  display_content_data: {
+    type: Number,
+    default: 1,
+  },
+  display_content_rule: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_banner: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_vote_item_data: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_vote_item_number: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_vote_item_name: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_vote_item_slogan: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_vote_item_cover: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_poster_button: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_back_button: {
+    type: Number,
+    default: 1,
+  },
+  display_detail_img_swp: {
+    type: Number,
+    default: 0,
+  },
+  display_sign_banner: {
+    type: Number,
+    default: 1,
+  },
+  display_sign_title: {
+    type: Number,
+    default: 1,
+  },
+  display_sign_data: {
+    type: Number,
+    default: 1,
+  },
+  display_sign_rule: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_banner: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_title: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_data: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_vote_item_type: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_rule: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_vote_item_cover: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_show: {
+    type: Number,
+    default: 1,
+  },
+  display_rank_vote_item_type_all_button: {
+    type: Number,
+    default: 1,
+  },
+  display_navbar_home: {
+    type: Number,
+    default: 1,
+  },
+  display_navbar_content: {
+    type: Number,
+    default: 1,
+  },
+  display_navbar_sign: {
+    type: Number,
+    default: 1,
+  },
+  display_navbar_search: {
+    type: Number,
+    default: 1,
+  },
+  display_navbar_rank: {
+    type: Number,
+    default: 1,
+  },
+  display_navbar_self: {
+    type: Number,
+    default: 0,
+  },
+  display_navbar_self_name: {
+    type: String,
+  },
+  display_navbar_self_link: {
+    type: String,
+  },
 })
 
 module.exports = mongoose.model("Rule", voteRule)
