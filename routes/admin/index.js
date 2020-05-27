@@ -71,21 +71,19 @@ module.exports = (app, acl) => {
   })
 
   app.post(
-    "/admin/api/upload/:id",
+    "/admin/api/upload",
     authMiddleware(),
     privilegeMiddleware(acl),
     upload.single("file"),
     async (req, res) => {
       const file = req.file
+      const itemId = req.body.itemId || ""
       file.url = `http://127.0.0.1:3000/uploads/${file.filename}`
-      let voteItem = await AdminVoteItem.findByIdAndUpdate(req.params.id, {
-        cover_url: file.url,
-      })
       res.send({
         code: 1,
         data: {
           cover_url: file.url,
-          itemId: req.params.id,
+          itemId,
         },
         msg: "上传成功",
       })
@@ -470,19 +468,20 @@ module.exports = (app, acl) => {
       res.send({ code: 1, msg: "删除成功" })
     }
   )
-  
+
   // 查询设置
   app.get(
     "/admin/api/more/:id",
     authMiddleware(),
     privilegeMiddleware(acl),
-    async (req,res)=>{
-      const voteMore = await AdminVoteRule.findOneAndUpdate(
-        { voteId: req.params.id }
-      )
+    async (req, res) => {
+      const voteMore = await AdminVoteRule.findOneAndUpdate({
+        voteId: req.params.id,
+      })
 
-      res.send({code:1,data:{voteMore},msg:''})
-    })
+      res.send({ code: 1, data: { voteMore }, msg: "" })
+    }
+  )
   // 高级设置
   app.post(
     "/admin/api/more/update/:id",

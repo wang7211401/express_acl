@@ -20,55 +20,11 @@ const voteRule = new Schema({
     type: String,
     default: "",
   },
-  block_address: {
-    type: Number,
-    default: 0,
-  },
-  block_ip: {
-    type: Number,
-    default: 0,
-  },
-  block_level: {
-    type: Number,
-    default: 0,
-  },
-  block_max_day: {
-    type: Number,
-    default: 0,
-  },
-  block_max_hour: {
-    type: Number,
-    default: 0,
-  },
-  block_time: {
-    type: Number,
-    default: 0,
-  },
-  captcha: {
-    type: Number,
-    default: 0,
-  },
-  comment_open: {
-    type: Number,
-    default: 0,
-  },
   display_copyright: {
     type: Number,
     default: 1,
   },
-  display_navbar_self: {
-    type: Number,
-    default: 0,
-  },
-  follow_open: {
-    type: Number,
-    default: 0,
-  },
   gift_open: {
-    type: Number,
-    default: 0,
-  },
-  live_open: {
     type: Number,
     default: 0,
   },
@@ -108,10 +64,6 @@ const voteRule = new Schema({
     type: Number,
     default: 0,
   },
-  private_open: {
-    type: Number,
-    default: 0,
-  },
   rule_everyday: {
     type: Number,
     default: 0,
@@ -135,26 +87,6 @@ const voteRule = new Schema({
   rule_type: {
     type: Number,
     default: 1,
-  },
-  sign_form: {
-    type: Number,
-    default: 0,
-  },
-  sign_notice_wx: {
-    type: Number,
-    default: 0,
-  },
-  sign_open: {
-    type: Number,
-    default: 0,
-  },
-  sign_upload_count_max: {
-    type: Number,
-    default: 0,
-  },
-  sign_video_open: {
-    type: Number,
-    default: 0,
   },
   statistics_vote: {
     type: Number,
@@ -437,6 +369,166 @@ const voteRule = new Schema({
   },
   display_navbar_self_link: {
     type: String,
+  },
+  share_open: {
+    type: Number,
+    default: 1,
+  },
+  share_title: {
+    type: String,
+  },
+  share_desc: {
+    type: String,
+  },
+  share_vote_item_title: {
+    type: String,
+  },
+  share_vote_item_desc: {
+    type: String,
+  },
+  share_img: {
+    type: String,
+  },
+  captcha: {
+    type: Number,
+    default: 0,
+  },
+  block_max_hour: {
+    type: Number,
+    default: 0,
+  },
+  block_max_day: {
+    type: Number,
+    default: 0,
+  },
+  block_level: {
+    type: Number,
+    default: 2,
+  },
+  block_time: {
+    type: Number,
+    default: 0,
+  },
+  block_time_start: {
+    type: String,
+  },
+  block_time_end: {
+    type: String,
+  },
+  block_address: {
+    type: String,
+  },
+  block_ip: {
+    type: String,
+  },
+  follow_open: {
+    type: Number,
+    default: 0,
+  },
+  follow_keyword: {
+    type: String,
+  },
+  comment_open: {
+    type: Number,
+    default: 0,
+  },
+  private_open: {
+    type: Number,
+    default: 0,
+  },
+  live_open: {
+    type: Number,
+    default: 0,
+  },
+  display_live_column: {
+    type: Number,
+    default: 6,
+  },
+  sign_open: {
+    type: Number,
+    default: 0,
+  },
+  sign_multiple: {
+    type: Number,
+    default: 0,
+  },
+  sign_video_open: {
+    type: Number,
+    default: 0,
+  },
+  sign_notice_wx: {
+    type: Number,
+    default: 0,
+  },
+  sign_upload_count_min: {
+    type: Number,
+    default: 0,
+  },
+  sign_upload_count_max: {
+    type: Number,
+    default: 1,
+  },
+  sign_upload_name: {
+    type: String,
+    default: "图片",
+  },
+  vote_item_type_name: {
+    type: String,
+    default: "分组",
+  },
+  sign_form: {
+    title: {
+      config: {
+        type: String,
+        default: "",
+      },
+      name: {
+        type: String,
+        default: "标题",
+      },
+      not_del: {
+        type: Number,
+        default: 1,
+      },
+      not_edit_validate: {
+        type: Number,
+        default: 1,
+      },
+      show: {
+        type: Number,
+        default: 2,
+      },
+      validate: {
+        type: Number,
+        default: 0,
+      },
+    },
+    content: {
+      config: {
+        type: String,
+        default: "",
+      },
+      name: {
+        type: String,
+        default: "描述",
+      },
+      not_del: {
+        type: Number,
+        default: 1,
+      },
+      not_edit_validate: {
+        type: Number,
+        default: 1,
+      },
+      show: {
+        type: Number,
+        default: 2,
+      },
+      validate: {
+        type: Number,
+        default: 0,
+      },
+    },
   },
 })
 
