@@ -41,8 +41,7 @@ const voteRule = new Schema({
     default: 0,
   },
   page_ad_img: {
-    type: Number,
-    default: 0,
+    type: String,
   },
   page_banner_auto: {
     type: Number,
@@ -141,12 +140,40 @@ const voteRule = new Schema({
     default: 0,
   },
   vote_succ_img: {
+    type: String,
+  },
+  vote_img_link: {
+    type: String,
+  },
+  vote_jump_link: {
+    type: String,
+  },
+  vote_jump_msg: {
+    type: String,
+  },
+  vote_jump_second: {
     type: Number,
-    default: 0,
+    default: 3,
   },
   display_index_column: {
     type: Number,
     default: 2,
+  },
+  page_ad_close: {
+    type: Number,
+    default: 1,
+  },
+  page_ad_second: {
+    type: String,
+    default: 5,
+  },
+  page_ad_show_times: {
+    type: Number,
+    default: 1,
+  },
+  page_ad_show_minute: {
+    type: String,
+    default: 30,
   },
   rule_text: {
     type: String,
