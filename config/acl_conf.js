@@ -25,6 +25,7 @@ module.exports = [
           "/admin/api/type/create/:id",
           "/admin/api/type/update/:id",
           "/admin/api/type/delete/:id",
+          "/admin/api/item/votecount/:id"
         ],
         permissions: ["post"],
       },
@@ -57,6 +58,7 @@ module.exports = [
           "/admin/api/type/create/:id",
           "/admin/api/type/update/:id",
           "/admin/api/type/delete/:id",
+          "/admin/api/item/votecount/:id"
         ],
         permissions: ["post"],
       },

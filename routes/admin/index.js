@@ -275,27 +275,42 @@ module.exports = (app, acl) => {
     async (req, res) => {
       const size = req.query.size || 10
       const page = req.query.page || 1
+      const order = req.query.order || 1
+      const keyword = req.query.keyword || ""
+
       let voteId = req.params.id
       let count = await AdminVoteItem.find({
         voteId,
         is_del: 0,
       }).count()
 
+      let objOrder = {}
+      if (order == 1) {
+        objOrder.create_time = -1
+      } else if (order == 2) {
+        objOrder.create_time = 1
+      } else if (order == 3) {
+        objOrder.vote_count = -1
+      } else if (order == 4) {
+        objOrder.vote_count = 1
+      } else if (order == 5) {
+        objOrder.index = -1
+      } else if (order == 6) {
+        objOrder.index = 1
+      }
       let voteItemList = await AdminVoteItem.find({
         voteId,
         is_del: 0,
-      })
-        .lean()
-        .populate("vote_item_type_id")
+      }).sort(objOrder)
         .skip((parseInt(page) - 1) * size)
         .limit(size)
 
       voteItemList.forEach((val) => {
-        val.create_time = plugin.formatDate(val.create_time)
-        val.update_time = plugin.formatDate(val.update_time)
+        val.createTime = plugin.formatDate(val.create_time)
+        val.updateTime = plugin.formatDate(val.update_time)
       })
 
-      res.send({ code: 1, data: { vote_item: voteItemList, count }, msg: "" })
+      res.send({ code: 1, data: { vote_items: voteItemList, count }, msg: "" })
     }
   )
   // 新增选手
@@ -317,6 +332,7 @@ module.exports = (app, acl) => {
         cover_url,
         create_time,
         index,
+        vote_item_type_id: voteId
       })
 
       let count = await AdminVoteItem.find({
@@ -359,6 +375,39 @@ module.exports = (app, acl) => {
         return res.send({ code: 0, msg: "选手id 不能为空" })
       }
       let voteItem = await AdminVoteItem.findByIdAndUpdate(itemId, obj)
+
+      res.send({ code: 1, msg: "修改成功" })
+    }
+  )
+  // 加票
+  app.post(
+    "/admin/api/item/votecount/:id",
+    authMiddleware(),
+    privilegeMiddleware(acl),
+    async (req, res) => {
+      // {
+      //   itemID: '2313',
+      //   tag: 'key',
+      //   value:'value'
+      // }
+
+      let { itemId, value } = req.body
+
+      if (!itemId) {
+        return res.send({ code: 0, msg: "选手id 不能为空" })
+      }
+
+      let voteItem = await AdminVoteItem.findOne({ _id: itemId, is_del: 0 })
+
+      if (!voteItem) {
+        return res.send({ code: 0, msg: "选手不存在" })
+      }
+      console.log(voteItem)
+      let vote_count = voteItem.vote_count
+
+      vote_count = vote_count + Number(value)
+
+      let newVoteItem = await AdminVoteItem.findByIdAndUpdate(itemId, { vote_count })
 
       res.send({ code: 1, msg: "修改成功" })
     }
