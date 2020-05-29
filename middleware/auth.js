@@ -7,7 +7,7 @@ module.exports = (options) => async (req, res, next) => {
     .pop()
   assert(token, 401, "请先登录")
   const { id } = jwt.verify(token, req.app.get("secret"))
-  assert(token, 401, "请先登录")
+  assert(id, 401, "请先登录")
   req.user = await AdminUser.findById(id)
   assert(req.user, 401, "请先登录")
   console.log(res.user)
