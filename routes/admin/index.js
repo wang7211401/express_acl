@@ -1,8 +1,13 @@
 module.exports = (app, acl) => {
   const express = require("express")
   const jwt = require("jsonwebtoken")
-  const assert = require("http-assert")
-  var ok = require("assert")
+  const sha1 = require("sha1")
+  const getRawBody = require("raw-body")
+  const contentType = require("content-type")
+  const config = require("../../config/wechat_config")
+  const Wechat = require("../../wechat/wechat")
+  const util = require("../../wechat/util")
+  const wechat_config = require("../../config/wechat_config")
   const AdminUser = require("../../models/AdminUser")
   const AdminVote = require("../../models/Vote")
   const AdminVoteItem = require("../../models/VoteItem")
@@ -13,22 +18,115 @@ module.exports = (app, acl) => {
     mergeParams: true,
   })
 
-  //   router.post("/", async (req, res) => {
-  //     const model = await req.Model.create(req.body)
-  //     res.send(model)
-  //   })
+  app.get("/", async (req, res) => {
+    let token = wechat_config.wechat.token
+    let signature = req.query.signature
+    let nonce = req.query.nonce
+    let timestamp = req.query.timestamp
+    let echostr = req.query.echostr
+    let str = [token, timestamp, nonce].sort().join("")
+    let sha = sha1(str)
+    if (sha === signature) {
+      res.send(echostr)
+    } else {
+      res.send("wrong")
+    }
+  })
 
-  //   router.put("/:id", async (req, res) => {
-  //     const model = await req.Model.findByIdAndUpdate(req.params.id, req.body)
-  //     res.send(model)
-  //   })
+  app.post("/", async (req, res) => {
+    let wechat = new Wechat(wechat_config.wechat)
+    let token = wechat_config.wechat.token
+    let signature = req.query.signature
+    let nonce = req.query.nonce
+    let timestamp = req.query.timestamp
+    let echostr = req.query.echostr
+    let str = [token, timestamp, nonce].sort().join("")
+    let sha = sha1(str)
+    if (sha !== signature) {
+      res.send("wrong")
+    }
 
-  //   router.delete("/:id", async (req, res) => {
-  //     await req.Model.findByIdAndDelete(req.params.id)
-  //     res.send({
-  //       success: true,
-  //     })
-  //   })
+    var data = await getRawBody(req, {
+      length: req.headers["content-length"],
+      limit: "1mb",
+      encoding: contentType.parse(req).parameters.charset,
+    })
+
+    var content = await util.parseXMLAsync(data)
+
+    var message = util.formatMessage(content.xml)
+
+    console.log("message", message)
+
+    let reply = ""
+    switch (message.MsgType) {
+      case "event":
+        if (message.Event === "subscribe") {
+          if (message.EventKey) {
+            console.log(
+              "扫二维码进来的" + message.EventKey + " " + message.ticket
+            )
+          }
+          reply = "恭喜你订阅了"
+        } else if (message.Event === "unsubscribe") {
+          console.log("取关")
+          reply = ""
+        } else if (message.Event === "SCAN") {
+          console.log(
+            "关注后扫二维码" + massage.EventKey + " " + message.ticket
+          )
+          reply = "扫一下"
+        }
+        break
+      case "location":
+        reply = `您上报的位置是:东经：${message.Location_X}，北纬：${message.Location_Y},地址：${message.Label}`
+        break
+      case "text":
+        let content = message.Content
+        if (content === "测试") {
+          reply = "test"
+        }
+        break
+      default:
+        break
+    }
+
+    console.log("reply", reply)
+    wechat.reply(reply, message, res)
+  })
+
+  app.get("/movie", async (req, res) => {
+    const appid = config.wechat.appID
+    console.log(appid)
+    const redirect_uri = "http://abs.free.qydev.com/code" //这里的url需要转为加密格式，它的作用是访问微信网页鉴权接口成功后微信会回调这个地址，并把code参数带在回调地址中
+    const scope = "snsapi_userinfo"
+    const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirect_uri}&response_type=code&scope=${scope}&state=123&connect_redirect=1#wechat_redirect`
+    res.status(302).redirect(`${url}`)
+  })
+
+  app.get("/code", async (req, res) => {
+    const appid = config.wechat.appID
+    const secret = config.wechat.appSecret
+    const code = req.query.code
+    const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appid}&secret=${secret}&code=${code}&grant_type=authorization_code`
+
+    let wechatApi = new Wechat(config.wechat)
+
+    let options = await wechatApi.getOpenId(url)
+
+    const userInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${options.access_token}&openid=${options.openid}&lang=zh_CN`
+
+    let userInfo = await wechatApi.getUserInfo(userInfoUrl)
+    console.log(userInfo)
+
+    res.send({
+      code: 0,
+      data: {
+        userInfo,
+      },
+      msg: "",
+    })
+  })
 
   //   router.get("/", async (req, res) => {
   //     let queryOptions = {}
@@ -45,11 +143,6 @@ module.exports = (app, acl) => {
   //       .skip((parseInt(page) - 1) * size)
   //       .limit(size)
   //     res.send({ items, count })
-  //   })
-
-  //   router.get("/:id", async (req, res) => {
-  //     const model = await req.Model.findById(req.params.id)
-  //     res.send(model)
   //   })
 
   // 登录校验
@@ -104,19 +197,7 @@ module.exports = (app, acl) => {
     if (!user) {
       return res.status(422).send({ code: 0, msg: "用户不存在" })
     }
-    // assert(user, 422, '用户不存在')
-    // try {
-
-    // } catch (err) {
-    //   ok(err.status === 422)
-    //   ok(err.message === '用户不存在')
-    //   ok(err.expose)
-    // }
-
     // 校验密码
-    // const isValid = require('md5')(password) != user.password
-
-    // assert(isValid, 422, '密码错误')
     if (require("md5")(password) != user.password) {
       return res.status(422).send({ code: 0, msg: "密码错误" })
     } else {
