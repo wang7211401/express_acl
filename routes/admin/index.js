@@ -64,7 +64,7 @@ module.exports = (app, acl) => {
         if (message.Event === "subscribe") {
           if (message.EventKey) {
             console.log(
-              "扫二维码进来的" + message.EventKey + " " + message.ticket
+              "扫二维码进来的" + message.EventKey + " " + message.Ticket
             )
           }
           reply = "恭喜你订阅了"
@@ -73,7 +73,7 @@ module.exports = (app, acl) => {
           reply = ""
         } else if (message.Event === "SCAN") {
           console.log(
-            "关注后扫二维码" + massage.EventKey + " " + message.ticket
+            "关注后扫二维码" + message.EventKey + " " + message.Ticket
           )
           reply = "扫一下"
         }
@@ -123,6 +123,24 @@ module.exports = (app, acl) => {
       code: 0,
       data: {
         userInfo,
+      },
+      msg: "",
+    })
+  })
+
+  app.get("/qrcode", async (req, res) => {
+    let wechatApi = new Wechat(config.wechat)
+    let ticketOptions = await wechatApi.createQrcode({
+      action_name: "QR_LIMIT_SCENE",
+      action_info: { scene: { scene_id: 123 } },
+    })
+
+    console.log(ticketOptions)
+    let qrcodeImg = wechatApi.showQrcode(ticketOptions.ticket)
+    res.send({
+      code: 1,
+      data: {
+        qrcode: qrcodeImg,
       },
       msg: "",
     })
