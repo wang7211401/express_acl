@@ -4,6 +4,7 @@ module.exports = (app, acl) => {
   const sha1 = require("sha1")
   const getRawBody = require("raw-body")
   const contentType = require("content-type")
+  const { redis } = require("../../plugins/dbRedis")
   const config = require("../../config/wechat_config")
   const Wechat = require("../../wechat/wechat")
   const util = require("../../wechat/util")
@@ -17,6 +18,7 @@ module.exports = (app, acl) => {
   const router = express.Router({
     mergeParams: true,
   })
+  let wechatApi = new Wechat(config.wechat)
 
   app.get("/", async (req, res) => {
     let token = wechat_config.wechat.token
@@ -57,38 +59,82 @@ module.exports = (app, acl) => {
     var message = util.formatMessage(content.xml)
 
     console.log("message", message)
+    const msgType = message.MsgType
+    const msgEvent = message.Event
+    const userID = message.FromUserName
+    let eventKey = message.EventKey
 
     let reply = ""
-    switch (message.MsgType) {
-      case "event":
-        if (message.Event === "subscribe") {
-          if (message.EventKey) {
-            console.log(
-              "扫二维码进来的" + message.EventKey + " " + message.Ticket
-            )
-          }
-          reply = "恭喜你订阅了"
-        } else if (message.Event === "unsubscribe") {
-          console.log("取关")
-          reply = ""
-        } else if (message.Event === "SCAN") {
-          console.log(
-            "关注后扫二维码" + message.EventKey + " " + message.Ticket
-          )
-          reply = "扫一下"
+    // switch (msgType) {
+    //   case "event":
+    //     if (message.Event === "subscribe") {
+    //       if (message.EventKey) {
+    //         console.log(
+    //           "扫二维码进来的" + message.EventKey + " " + message.Ticket
+    //         )
+    //       }
+    //       reply = "恭喜你订阅了"
+    //     } else if (message.Event === "unsubscribe") {
+    //       console.log("取关")
+    //       reply = ""
+    //     } else if (message.Event === "SCAN") {
+    //       console.log(
+    //         "关注后扫二维码" + message.EventKey + " " + message.Ticket
+    //       )
+    //       reply = "扫一下"
+    //     }
+    //     break
+    //   case "location":
+    //     reply = `您上报的位置是:东经：${message.Location_X}，北纬：${message.Location_Y},地址：${message.Label}`
+    //     break
+    //   case "text":
+    //     let content = message.Content
+    //     if (content === "测试") {
+    //       reply = "test"
+    //     }
+    //     break
+    //   default:
+    //     break
+    // }
+    if (msgType == "event") {
+      switch (msgEvent) {
+        // 关注&取关
+        case "subscribe":
+          return "感谢您的关注"
+        case "unsubscribe":
+          break
+        // 关注后扫码
+        case "SCAN":
+          reply = "扫码成功"
+          break
+      }
+
+      if (!!eventKey) {
+        // 有场景值（扫了我们生成的二维码）
+        let user = await wechatApi.fetchUsers(userID)
+        let userInfo = `${user.nickname}（${user.sex ? "男" : "女"}, ${
+          user.province
+        }${user.city}）`
+        console.log("userInfo", userInfo)
+        if (eventKey.slice(0, 8) === "qrscene_") {
+          // 扫码并关注
+          // 关注就创建帐号的话可以在这里把用户信息写入数据库完成用户注册
+          eventKey = eventKey.slice(8)
+          console.log("eventKey", eventKey + "扫码并关注了公众号")
+          // reply = "扫码并关注了公众号"
+        } else {
+          // 已关注
+          console.log(eventKey + "扫码进入了公众号")
+          // reply = "扫码并关注了公众号"
         }
-        break
-      case "location":
-        reply = `您上报的位置是:东经：${message.Location_X}，北纬：${message.Location_Y},地址：${message.Label}`
-        break
-      case "text":
-        let content = message.Content
-        if (content === "测试") {
-          reply = "test"
-        }
-        break
-      default:
-        break
+
+        // 更新扫码记录，供浏览器扫码状态轮询
+        await redis
+          .pipeline()
+          .hset(eventKey, "unionID", user.unionid || "") // 仅unionid机制下有效
+          .hset(eventKey, "openID", user.openid)
+          .exec()
+      }
     }
 
     console.log("reply", reply)
@@ -110,8 +156,6 @@ module.exports = (app, acl) => {
     const code = req.query.code
     const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appid}&secret=${secret}&code=${code}&grant_type=authorization_code`
 
-    let wechatApi = new Wechat(config.wechat)
-
     let options = await wechatApi.getOpenId(url)
 
     const userInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${options.access_token}&openid=${options.openid}&lang=zh_CN`
@@ -128,11 +172,16 @@ module.exports = (app, acl) => {
     })
   })
 
-  app.get("/qrcode", async (req, res) => {
-    let wechatApi = new Wechat(config.wechat)
+  app.get("/admin/api/qrcode", async (req, res) => {
+    let id = util.createTimestamp()
     let ticketOptions = await wechatApi.createQrcode({
-      action_name: "QR_LIMIT_SCENE",
-      action_info: { scene: { scene_id: 123 } },
+      expire_seconds: 60,
+      action_name: "QR_STR_SCENE", // 临时二维码
+      action_info: {
+        scene: {
+          scene_str: id,
+        },
+      },
     })
 
     console.log(ticketOptions)
@@ -146,6 +195,25 @@ module.exports = (app, acl) => {
     })
   })
 
+  app.get("/admin/api/wechat/check", async (req, res) => {
+    let openId = ""
+    // let openId = await redis.hget()
+    // await redis
+    //   .pipeline()
+    //   .hset("123", "unionID", "unionid123") // 仅unionid机制下有效
+    //   .exec()
+
+    // openId = await redis.hget("123", "unionID")
+    res.send({
+      code: 0,
+      msg: "",
+      data: {
+        openId,
+      },
+      url: "",
+      wait: 3,
+    })
+  })
   //   router.get("/", async (req, res) => {
   //     let queryOptions = {}
   //     if (req.Model.modelName === "Category") {

@@ -41,6 +41,11 @@ function formatMessage(result) {
   return message
 }
 
+function createTimestamp() {
+  return parseInt(new Date().getTime() / 1000, 0) + ""
+}
+
+exports.createTimestamp = createTimestamp
 exports.formatMessage = formatMessage
 
 exports.tpl = function (content, message) {
