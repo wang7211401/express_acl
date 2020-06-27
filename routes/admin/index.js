@@ -112,10 +112,10 @@ module.exports = (app, acl) => {
       if (!!eventKey) {
         // 有场景值（扫了我们生成的二维码）
         let user = await wechatApi.fetchUsers(userID)
-        let userInfo = `${user.nickname}（${user.sex ? "男" : "女"}, ${
-          user.province
-        }${user.city}）`
-        console.log("userInfo", userInfo)
+        // let userInfo = `${user.nickname}（${user.sex ? "男" : "女"}, ${
+        //   user.province
+        // }${user.city}）`
+        console.log("user", user)
         if (eventKey.slice(0, 8) === "qrscene_") {
           // 扫码并关注
           // 关注就创建帐号的话可以在这里把用户信息写入数据库完成用户注册
@@ -175,7 +175,7 @@ module.exports = (app, acl) => {
   app.get("/admin/api/qrcode", async (req, res) => {
     let id = util.createTimestamp()
     let ticketOptions = await wechatApi.createQrcode({
-      expire_seconds: 60,
+      expire_seconds: 600,
       action_name: "QR_STR_SCENE", // 临时二维码
       action_info: {
         scene: {
