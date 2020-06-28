@@ -209,6 +209,7 @@ module.exports = (app, acl) => {
         url: "",
         wait: 3,
       })
+      return
     }
 
     const user = await AdminUser.findOne({
@@ -224,6 +225,7 @@ module.exports = (app, acl) => {
         },
         url: "/bindqrcode",
       })
+      return
     } else {
       const token = jwt.sign(
         {
