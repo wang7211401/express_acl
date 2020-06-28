@@ -212,7 +212,7 @@ module.exports = (app, acl) => {
     }
 
     const user = await AdminUser.findOne({
-      openId,
+      openid: openId,
     })
 
     if (!user) {
@@ -274,7 +274,7 @@ module.exports = (app, acl) => {
 
       const newUser = await AdminUser.findByIdAndUpdate(user._id, {
         subscribe: wechatUser.subscribe,
-        openid: wechatUser.openId,
+        openid: wechatUser.openid,
         nickname: wechatUser.nickname,
         sex: wechatUser.sex,
         city: wechatUser.city,
