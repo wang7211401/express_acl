@@ -100,7 +100,7 @@ module.exports = (app, acl) => {
       switch (msgEvent) {
         // 关注&取关
         case "subscribe":
-          return "感谢您的关注"
+          reply = "感谢您的关注"
         case "unsubscribe":
           break
         // 关注后扫码
@@ -190,30 +190,114 @@ module.exports = (app, acl) => {
       code: 1,
       data: {
         qrcode: qrcodeImg,
+        scene_str: id,
       },
       msg: "",
     })
   })
 
   app.get("/admin/api/wechat/check", async (req, res) => {
-    let openId = ""
-    // let openId = await redis.hget()
+    let sence_str = req.query.scene_str
+    let openId = await redis.hget(sence_str, "openID")
+
+    if (!openId) {
+      openId = ""
+      res.send({
+        code: 0,
+        msg: "",
+        data: {},
+        url: "",
+        wait: 3,
+      })
+    }
+
+    const user = await AdminUser.findOne({
+      openId,
+    })
+
+    if (!user) {
+      res.send({
+        code: 1,
+        msg: "",
+        data: {
+          openId,
+        },
+        url: "/bindqrcode",
+      })
+    } else {
+      const token = jwt.sign(
+        {
+          id: user._id,
+        },
+        app.get("secret")
+      )
+
+      res.send({
+        code: 1,
+        msg: "",
+        data: {},
+        url: "/vote/index",
+        token,
+      })
+    }
     // await redis
     //   .pipeline()
     //   .hset("123", "unionID", "unionid123") // 仅unionid机制下有效
     //   .exec()
 
     // openId = await redis.hget("123", "unionID")
-    res.send({
-      code: 0,
-      msg: "",
-      data: {
-        openId,
-      },
-      url: "",
-      wait: 3,
-    })
   })
+
+  app.post("/admin/api/wechat/bind", async (req, res) => {
+    const { id, username, password } = req.body
+
+    if (!username || !password || !id) {
+      return res.send({ code: 0, msg: "用户名或密码不能为空！" })
+    }
+    // 根据用户名找用户
+    const user = await AdminUser.findOne({
+      username,
+    }).select("+password")
+
+    if (!user) {
+      return res.status(422).send({ code: 0, msg: "用户不存在" })
+    }
+    // 校验密码
+    if (require("md5")(password) != user.password) {
+      return res.status(422).send({ code: 0, msg: "密码错误" })
+    } else {
+      let wechatUser = await wechatApi.fetchUsers(id)
+
+      if (!wechatUser) {
+        return res.status(422).send({ code: 0, msg: "id 不存在" })
+      }
+
+      const newUser = await AdminUser.findByIdAndUpdate(user._id, {
+        subscribe: wechatUser.subscribe,
+        openid: wechatUser.openId,
+        nickname: wechatUser.nickname,
+        sex: wechatUser.sex,
+        city: wechatUser.city,
+        province: wechatUser.province,
+        country: wechatUser.country,
+        headimgurl: wechatUser.headimgurl,
+        subscribe_time: wechatUser.subscribe_time,
+        subscribe_scene: wechatUser.subscribe_scene,
+        qr_scene: wechatUser.qr_scene,
+        qr_scene_str: wechatUser.qr_scene,
+      })
+      // 数据token
+      const token = jwt.sign(
+        {
+          id: user._id,
+        },
+        app.get("secret")
+      )
+
+      res.send({ code: 1, token })
+    }
+  })
+
   //   router.get("/", async (req, res) => {
   //     let queryOptions = {}
   //     if (req.Model.modelName === "Category") {
