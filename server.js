@@ -12,9 +12,13 @@ app.use(bodyParser.json())
 
 app.use("/uploads", express.static(__dirname + "/uploads"))
 
-require("./plugins/db")(app).then((acl) => {
-  require("./routes/admin")(app, acl)
-})
+require("./plugins/db")(app)
+  .then((acl) => {
+    require("./routes/admin")(app, acl)
+  })
+  .catch((err) => {
+    console.log(err)
+  })
 
 app.listen(3002, () => {
   console.log("listening on port 3002")
