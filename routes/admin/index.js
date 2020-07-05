@@ -343,7 +343,7 @@ module.exports = (app, acl) => {
     async (req, res) => {
       const file = req.file
       const itemId = req.body.itemId || ""
-      file.url = `http://127.0.0.1:3000/uploads/${file.filename}`
+      file.url = `https://api.shadowwang.xyz/uploads/${file.filename}`
       res.send({
         code: 1,
         data: {
